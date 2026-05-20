@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE ANGLO SCHOOL - Dashboard Multi-pages</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/poppins@5.0.8/index.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0a0e27;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Layout */
+        .app {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(180deg, rgba(15, 15, 45, 0.95), rgba(10, 10, 30, 0.98));
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255,255,255,0.06);
+            padding: 30px 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            padding: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding-bottom: 25px;
+        }
+
+        .sidebar-logo .emoji { font-size: 2.2em; margin-bottom: 10px; }
+
+        .sidebar-logo h2 {
+            font-size: 0.95em;
+            background: linear-gradient(135deg, #a5b4fc, #f0abfc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .sidebar-logo p {
+            color: #64748b;
+            font-size: 0.7em;
+            margin-top: 5px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .nav-section {
+            color: #64748b;
+            font-size: 0.7em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 25px 10px 12px;
+            font-weight: 700;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 16px;
+            margin-bottom: 4px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #94a3b8;
+            font-size: 0.92em;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #fff;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.25), rgba(118, 75, 162, 0.25));
+            color: #fff;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #667eea, #f093fb);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .nav-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .nav-item.active .nav-icon {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            padding: 2px 8px;
+            background: rgba(240, 147, 251, 0.2);
+            color: #f0abfc;
+            border-radius: 10px;
+            font-size: 0.7em;
+            font-weight: 700;
+        }
+
+        .sidebar-footer {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.08);
+            border: 1px solid rgba(102, 126, 234, 0.15);
+            border-radius: 12px;
+            font-size: 0.75em;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        .sidebar-footer strong { color: #a5b4fc; }
+
+        /* Main Content */
+        .main {
+            padding: 30px 40px;
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, rgba(30, 30, 80, 0.7), rgba(20, 20, 50, 0.8));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 35px 40px;
+            border-radius: 24px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%; right: -20%;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.15), transparent 70%);
+            border-radius: 50%;
+        }
+
+        .page-header-content { position: relative; z-index: 1; }
+
+        .breadcrumb {
+            color: #64748b;
+            font-size: 0.85em;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .breadcrumb span { color: #a5b4fc; }
+
+        .page-title {
+            font-size: 2.5em;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-subtitle {
+            color: #cbd5e1;
+            font-size: 1em;
+        }
+
+        .year-pills {
+            display: inline-flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 20px;
+            padding: 6px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .pill {
+            padding: 10px 22px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.95em;
+        }
+
+        .pill-prev { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .pill-vs { color: #64748b; font-weight: 800; }
+        .pill-next { background: linear-gradient(135deg, #f093fb, #f5576c); color: white; }
+
+        /* Insight Banner */
+        .insight-banner {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 182, 212, 0.12));
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 22px 28px;
+            border-radius: 18px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .insight-icon {
+            width: 55px; height: 55px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6em;
+            flex-shrink: 0;
+        }
+
+        .insight-text h3 { color: #34d399; font-size: 1.1em; margin-bottom: 5px; }
+        .insight-text p { color: #cbd5e1; font-size: 0.9em; line-height: 1.5; }
+
+        .highlight {
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        /* KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, rgba(30, 30, 80, 0.55), rgba(20, 20, 50, 0.75));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 24px;
+            border-radius: 18px;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(165, 180, 252, 0.4);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+        }
+
+        .kpi-icon {
+            width: 45px; height: 45px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3em;
+            margin-bottom: 14px;
+        }
+
+        .icon-blue { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .icon-pink { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .icon-green { background: linear-gradient(135deg, #10b981, #059669); }
+        .icon-yellow { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .icon-purple { background: linear-gradient(135deg, #8b5cf6, #6366f1); }
+        .icon-cyan { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+
+        .kpi-label {
+            color: #94a3b8;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .kpi-nums {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .kpi-old {
+            font-size: 1.2em;
+            color: #a5b4fc;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .kpi-new {
+            font-size: 2.2em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #f0abfc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .kpi-delta {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 11px;
+            border-radius: 20px;
+            font-size: 0.78em;
+            font-weight: 700;
+        }
+
+        .delta-up { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .delta-down { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .delta-neutral { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+
+        .kpi-sub {
+            color: #64748b;
+            font-size: 0.72em;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 1.5em;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title-bar {
+            width: 5px; height: 28px;
+            background: linear-gradient(180deg, #667eea, #f093fb);
+            border-radius: 3px;
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 22px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: linear-gradient(135deg, rgba(30, 30, 80, 0.55), rgba(20, 20, 50, 0.75));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 28px;
+            border-radius: 18px;
+            transition: all 0.3s;
+        }
+
+        .chart-card:hover { border-color: rgba(165, 180, 252, 0.3); }
+        .chart-card.full { grid-column: 1 / -1; }
+
+        .chart-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .chart-title h3 { font-size: 1.15em; font-weight: 700; color: #fff; }
+
+        /* Cycle Cards */
+        .cycle-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .cycle-mini {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 22px;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .cycle-mini:hover {
+            transform: translateY(-4px);
+            border-color: rgba(165, 180, 252, 0.4);
+        }
+
+        .cycle-mini::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+        }
+
+        .cycle-mini.mat::before { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+        .cycle-mini.pri::before { background: linear-gradient(90deg, #10b981, #059669); }
+        .cycle-mini.col::before { background: linear-gradient(90deg, #8b5cf6, #6366f1); }
+        .cycle-mini.lyc::before { background: linear-gradient(90deg, #ef4444, #dc2626); }
+
+        .cycle-mini-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .cycle-mini-name { font-weight: 700; color: #fff; font-size: 1.05em; }
+        .cycle-mini-icon { font-size: 1.8em; }
+
+        .cycle-mini-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .cycle-old { color: #a5b4fc; font-weight: 600; }
+        .cycle-new { color: #f0abfc; font-weight: 800; font-size: 1.4em; }
+        .cycle-arrow { color: #64748b; font-size: 1.2em; }
+
+        /* Table */
+        .table-card {
+            background: linear-gradient(135deg, rgba(30, 30, 80, 0.55), rgba(20, 20, 50, 0.75));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 28px;
+            border-radius: 18px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .table-wrapper { overflow-x: auto; border-radius: 12px; }
+
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+
+        thead { background: linear-gradient(135deg, #667eea, #764ba2); }
+
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: white;
+            font-weight: 700;
+        }
+
+        td {
+            padding: 13px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #e2e8f0;
+            font-size: 0.92em;
+        }
+
+        tbody tr { transition: all 0.2s; }
+        tbody tr:hover { background: rgba(102, 126, 234, 0.08); }
+
+        .level-cell { font-weight: 700; color: #fff; }
+
+        .diff-up { color: #34d399; font-weight: 700; }
+        .diff-down { color: #f87171; font-weight: 700; }
+        .diff-zero { color: #fbbf24; font-weight: 700; }
+
+        .new-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 700;
+        }
+
+        .total-row {
+            background: rgba(102, 126, 234, 0.15);
+            font-weight: 700;
+        }
+
+        .total-row td { color: #fff; border-top: 2px solid rgba(102, 126, 234, 0.3); }
+
+        /* Cycle Page Specific */
+        .cycle-hero {
+            background: linear-gradient(135deg, rgba(30, 30, 80, 0.7), rgba(20, 20, 50, 0.85));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 40px;
+            border-radius: 24px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cycle-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%; right: -10%;
+            width: 350px; height: 350px;
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        .cycle-hero.mat::before { background: radial-gradient(circle, rgba(251, 191, 36, 0.4), transparent 70%); }
+        .cycle-hero.pri::before { background: radial-gradient(circle, rgba(16, 185, 129, 0.4), transparent 70%); }
+        .cycle-hero.col::before { background: radial-gradient(circle, rgba(139, 92, 246, 0.4), transparent 70%); }
+        .cycle-hero.lyc::before { background: radial-gradient(circle, rgba(239, 68, 68, 0.4), transparent 70%); }
+
+        .cycle-hero-content { position: relative; z-index: 1; }
+
+        .cycle-emoji { font-size: 3.5em; margin-bottom: 15px; }
+
+        .cycle-title {
+            font-size: 2.5em;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .cycle-hero.mat .cycle-title { background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .cycle-hero.pri .cycle-title { background: linear-gradient(135deg, #10b981, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .cycle-hero.col .cycle-title { background: linear-gradient(135deg, #8b5cf6, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .cycle-hero.lyc .cycle-title { background: linear-gradient(135deg, #ef4444, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .cycle-description { color: #cbd5e1; font-size: 1em; margin-bottom: 20px; }
+
+        /* Mobile Menu Toggle */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px; left: 20px;
+            z-index: 200;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            width: 45px; height: 45px;
+            border-radius: 12px;
+            font-size: 1.3em;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .footer-note {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.8em;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .footer-note strong { color: #a5b4fc; }
+
+        /* Progress bars */
+        .progress-item { margin-bottom: 12px; }
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+        .progress-track {
+            height: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .fill-old { background: linear-gradient(90deg, #667eea, #764ba2); }
+        .fill-new { background: linear-gradient(90deg, #f093fb, #f5576c); }
+
+        @media (max-width: 968px) {
+            .app { grid-template-columns: 1fr; }
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                width: 260px;
+                transition: left 0.3s;
+            }
+            .sidebar.open { left: 0; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; }
+            .main { padding: 70px 20px 30px; }
+            .page-title { font-size: 1.8em; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .cycle-title { font-size: 1.8em; }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="emoji">🎓</div>
+                <h2>THE ANGLO SCHOOL</h2>
+                <p>Dashboard Effectifs</p>
+            </div>
+
+            <div class="nav-section">Vue d'ensemble</div>
+            <div class="nav-item active" onclick="showPage('home', this)">
+                <div class="nav-icon">🏠</div>
+                <span>Accueil</span>
+            </div>
+
+            <div class="nav-section">Par Cycle</div>
+            <div class="nav-item" onclick="showPage('maternelle', this)">
+                <div class="nav-icon">🎨</div>
+                <span>Maternelle</span>
+                <span class="nav-badge">PS-GS</span>
+            </div>
+            <div class="nav-item" onclick="showPage('primaire', this)">
+                <div class="nav-icon">📚</div>
+                <span>Primaire</span>
+                <span class="nav-badge">EC1-6</span>
+            </div>
+            <div class="nav-item" onclick="showPage('college', this)">
+                <div class="nav-icon">🏫</div>
+                <span>Collège</span>
+                <span class="nav-badge">JHS</span>
+            </div>
+            <div class="nav-item" onclick="showPage('lycee', this)">
+                <div class="nav-icon">🎓</div>
+                <span>Lycée</span>
+                <span class="nav-badge">BAC</span>
+            </div>
+
+            <div class="sidebar-footer">
+                📅 Date: <strong>19/05/2026</strong><br>
+                Inscriptions en cours
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+
+            <!-- ============ PAGE: HOME ============ -->
+            <div id="page-home" class="page active">
+                <div class="page-header">
+                    <div class="page-header-content">
+                        <div class="breadcrumb">🏠 <span>Vue d'ensemble</span></div>
+                        <h1 class="page-title">Tableau de Bord Global</h1>
+                        <p class="page-subtitle">Comparaison des effectifs entre les deux années scolaires</p>
+                        <div class="year-pills">
+                            <div class="pill pill-prev">📅 2025/2026 (final)</div>
+                            <span class="pill-vs">VS</span>
+                            <div class="pill pill-next">📅 2026/2027 (actuel)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="insight-banner">
+                    <div class="insight-icon">💡</div>
+                    <div class="insight-text">
+                        <h3>Point Clé à Retenir</h3>
+                        <p>
+                            À la <span class="highlight">date du 19 mai</span>, les inscriptions 2026/2027 (<strong>374 élèves</strong>) dépassent celles de l'an dernier à la même date (<strong>349 élèves</strong>), soit 
+                            <span class="highlight">+25 élèves (+7.2%)</span>. 
+                            Les inscriptions sont encore en cours.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Global KPIs -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-blue">👥</div>
+                        <div class="kpi-label">Total Final 2025/2026</div>
+                        <div class="kpi-nums"><span class="kpi-new">644</span></div>
+                        <span class="kpi-delta delta-neutral">Année complète</span>
+                        <div class="kpi-sub">Total atteint en fin d'année</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-pink">📈</div>
+                        <div class="kpi-label">Inscriptions Actuelles 26/27</div>
+                        <div class="kpi-nums"><span class="kpi-new">374</span></div>
+                        <span class="kpi-delta delta-up">▲ +25 vs 19/05/2025</span>
+                        <div class="kpi-sub">En date du 19/05/2026</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-cyan">⏱️</div>
+                        <div class="kpi-label">À Date Égale (19 mai)</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">349</span>
+                            <span class="kpi-new">374</span>
+                        </div>
+                        <span class="kpi-delta delta-up">▲ +25 (+7.2%)</span>
+                        <div class="kpi-sub">Comparaison équitable</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-purple">🏫</div>
+                        <div class="kpi-label">Nombre de Classes</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">36</span>
+                            <span class="kpi-new">36</span>
+                        </div>
+                        <span class="kpi-delta delta-neutral">= stable</span>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-green">✨</div>
+                        <div class="kpi-label">Nouveaux Élèves</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">25</span>
+                            <span class="kpi-new">59</span>
+                        </div>
+                        <span class="kpi-delta delta-up">▲ +34 vs 19/05/2025</span>
+                        <div class="kpi-sub">À la même date l'an dernier</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-yellow">🔁</div>
+                        <div class="kpi-label">Anciens Élèves</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">324</span>
+                            <span class="kpi-new">315</span>
+                        </div>
+                        <span class="kpi-delta delta-neutral">En cours</span>
+                        <div class="kpi-sub">À la même date l'an dernier</div>
+                    </div>
+                </div>
+
+                <!-- Cycle Mini Cards (Clickable) -->
+                <div class="section-title">
+                    <div class="section-title-bar"></div>
+                    Aperçu par Cycle
+                </div>
+
+                <div class="cycle-cards">
+                    <div class="cycle-mini mat" onclick="showPage('maternelle', document.querySelectorAll('.nav-item')[2])">
+                        <div class="cycle-mini-header">
+                            <div class="cycle-mini-name">Maternelle</div>
+                            <div class="cycle-mini-icon">🎨</div>
+                        </div>
+                        <div class="cycle-mini-stats">
+                            <span class="cycle-old">107</span>
+                            <span class="cycle-arrow">→</span>
+                            <span class="cycle-new">65</span>
+                        </div>
+                        <div class="kpi-sub">PS • MS • GS</div>
+                    </div>
+
+                    <div class="cycle-mini pri" onclick="showPage('primaire', document.querySelectorAll('.nav-item')[3])">
+                        <div class="cycle-mini-header">
+                            <div class="cycle-mini-name">Primaire</div>
+                            <div class="cycle-mini-icon">📚</div>
+                        </div>
+                        <div class="cycle-mini-stats">
+                            <span class="cycle-old">294</span>
+                            <span class="cycle-arrow">→</span>
+                            <span class="cycle-new">179</span>
+                        </div>
+                        <div class="kpi-sub">EC 1 → EC 6</div>
+                    </div>
+
+                    <div class="cycle-mini col" onclick="showPage('college', document.querySelectorAll('.nav-item')[4])">
+                        <div class="cycle-mini-header">
+                            <div class="cycle-mini-name">Collège</div>
+                            <div class="cycle-mini-icon">🏫</div>
+                        </div>
+                        <div class="cycle-mini-stats">
+                            <span class="cycle-old">183</span>
+                            <span class="cycle-arrow">→</span>
+                            <span class="cycle-new">102</span>
+                        </div>
+                        <div class="kpi-sub">JHS & CCS</div>
+                    </div>
+
+                    <div class="cycle-mini lyc" onclick="showPage('lycee', document.querySelectorAll('.nav-item')[5])">
+                        <div class="cycle-mini-header">
+                            <div class="cycle-mini-name">Lycée</div>
+                            <div class="cycle-mini-icon">🎓</div>
+                        </div>
+                        <div class="cycle-mini-stats">
+                            <span class="cycle-old">60</span>
+                            <span class="cycle-arrow">→</span>
+                            <span class="cycle-new">28</span>
+                        </div>
+                        <div class="kpi-sub">1 BAC & 2 BAC</div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <div class="section-title-bar"></div>
+                            <h3>Comparaison à Date Égale (19/05)</h3>
+                        </div>
+                        <canvas id="homeSameDate"></canvas>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <div class="section-title-bar"></div>
+                            <h3>Nouveaux vs Anciens (à date égale)</h3>
+                        </div>
+                        <canvas id="homeNewOld"></canvas>
+                    </div>
+
+                    <div class="chart-card full">
+                        <div class="chart-title">
+                            <div class="section-title-bar"></div>
+                            <h3>Comparaison par Cycle (Final 25/26 vs Actuel 26/27)</h3>
+                        </div>
+                        <canvas id="homeCycles"></canvas>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <div class="section-title-bar"></div>
+                            <h3>Parité F/M - 2025/2026 (final)</h3>
+                        </div>
+                        <canvas id="homeGenderPrev"></canvas>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <div class="section-title-bar"></div>
+                            <h3>Parité F/M - 2026/2027 (actuel)</h3>
+                        </div>
+                        <canvas id="homeGenderNext"></canvas>
+                    </div>
+                </div>
+
+                <div class="footer-note">
+                    © <strong>THE ANGLO SCHOOL</strong> | 📅 Date d'extraction: <strong>19/05/2026</strong> | Inscriptions 2026/2027 en cours
+                </div>
+            </div>
+
+            <!-- ============ PAGE: MATERNELLE ============ -->
+            <div id="page-maternelle" class="page">
+                <div class="cycle-hero mat">
+                    <div class="cycle-hero-content">
+                        <div class="cycle-emoji">🎨</div>
+                        <h1 class="cycle-title">Maternelle</h1>
+                        <p class="cycle-description">Niveaux PS, MS et GS - Les fondations de l'apprentissage</p>
+                        <div class="year-pills">
+                            <div class="pill pill-prev">2025/2026</div>
+                            <span class="pill-vs">VS</span>
+                            <div class="pill pill-next">2026/2027</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-yellow">👶</div>
+                        <div class="kpi-label">Effectif Total</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">107</span>
+                            <span class="kpi-new">65</span>
+                        </div>
+                        <span class="kpi-delta delta-neutral">Inscriptions en cours</span>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-purple">🏫</div>
+                        <div class="kpi-label">Classes</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">6</span>
+                            <span class="kpi-new">5</span>
+                        </div>
+                        <span class="kpi-delta delta-down">▼ -1 classe</span>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-pink">👧</div>
+                        <div class="kpi-label">Féminin</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">55</span>
+                            <span class="kpi-new">23</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-blue">👦</div>
+                        <div class="kpi-label">Masculin</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">52</span>
+                            <span class="kpi-new">42</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-green">✨</div>
+                        <div class="kpi-label">Nouveaux</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">53</span>
+                            <span class="kpi-new">37</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-cyan">🔁</div>
+                        <div class="kpi-label">Redoublants</div>
+                        <div class="kpi-nums"><span class="kpi-new">0</span></div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <div class="section-title-bar"></div>
+                            <h3>Effectif par Niveau</h3>
+                        </div>
+                        <canvas id="matLevelChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <div class="section-title-bar"></div>
+                            <h3>Parité F/M 2026/2027</h3>
+                        </div>
+                        <canvas id="matGenderChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <div class="section-title">
+                        <div class="section-title-bar"></div>
+                        Détail par Niveau - Maternelle
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Niveau</th>
+                                    <th>Cl. 25/26</th>
+                                    <th>Cl. 26/27</th>
+                                    <th>Total 25/26</th>
+                                    <th>Total 26/27</th>
+                                    <th>F 25/26</th>
+                                    <th>F 26/27</th>
+                                    <th>M 25/26</th>
+                                    <th>M 26/27</th>
+                                    <th>Nouv. 26/27</th>
+                                </tr>
+                            </thead>
+                            <tbody id="matTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PAGE: PRIMAIRE ============ -->
+            <div id="page-primaire" class="page">
+                <div class="cycle-hero pri">
+                    <div class="cycle-hero-content">
+                        <div class="cycle-emoji">📚</div>
+                        <h1 class="cycle-title">Primaire</h1>
+                        <p class="cycle-description">Niveaux EC 1 à EC 6 - Cycle d'apprentissage fondamental</p>
+                        <div class="year-pills">
+                            <div class="pill pill-prev">2025/2026</div>
+                            <span class="pill-vs">VS</span>
+                            <div class="pill pill-next">2026/2027</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-green">📖</div>
+                        <div class="kpi-label">Effectif Total</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">294</span>
+                            <span class="kpi-new">179</span>
+                        </div>
+                        <span class="kpi-delta delta-neutral">Inscriptions en cours</span>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-purple">🏫</div>
+                        <div class="kpi-label">Classes</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">13</span>
+                            <span class="kpi-new">14</span>
+                        </div>
+                        <span class="kpi-delta delta-up">▲ +1 classe</span>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-pink">👧</div>
+                        <div class="kpi-label">Féminin</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">133</span>
+                            <span class="kpi-new">83</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-blue">👦</div>
+                        <div class="kpi-label">Masculin</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">161</span>
+                            <span class="kpi-new">96</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-yellow">✨</div>
+                        <div class="kpi-label">Nouveaux</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">36</span>
+                            <span class="kpi-new">5</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-red">🔁</div>
+                        <div class="kpi-label">Redoublants</div>
+                        <div class="kpi-nums"><span class="kpi-new">1</span></div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <div class="section-title-bar"></div>
+                            <h3>Effectif par Niveau</h3>
+                        </div>
+                        <canvas id="priLevelChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <div class="section-title-bar"></div>
+                            <h3>Parité F/M 2026/2027</h3>
+                        </div>
+                        <canvas id="priGenderChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <div class="section-title">
+                        <div class="section-title-bar"></div>
+                        Détail par Niveau - Primaire
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Niveau</th>
+                                    <th>Cl. 25/26</th>
+                                    <th>Cl. 26/27</th>
+                                    <th>Total 25/26</th>
+                                    <th>Total 26/27</th>
+                                    <th>F 25/26</th>
+                                    <th>F 26/27</th>
+                                    <th>M 25/26</th>
+                                    <th>M 26/27</th>
+                                    <th>Nouv. 26/27</th>
+                                </tr>
+                            </thead>
+                            <tbody id="priTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PAGE: COLLEGE ============ -->
+            <div id="page-college" class="page">
+                <div class="cycle-hero col">
+                    <div class="cycle-hero-content">
+                        <div class="cycle-emoji">🏫</div>
+                        <h1 class="cycle-title">Collège</h1>
+                        <p class="cycle-description">Junior High School (JHS) & CCS - Sections anglaise et française</p>
+                        <div class="year-pills">
+                            <div class="pill pill-prev">2025/2026</div>
+                            <span class="pill-vs">VS</span>
+                            <div class="pill pill-next">2026/2027</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-purple">🎒</div>
+                        <div class="kpi-label">Effectif Total</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">183</span>
+                            <span class="kpi-new">102</span>
+                        </div>
+                        <span class="kpi-delta delta-neutral">Inscriptions en cours</span>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-cyan">🏫</div>
+                        <div class="kpi-label">Classes</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">10</span>
+                            <span class="kpi-new">10</span>
+                        </div>
+                        <span class="kpi-delta delta-neutral">= stable</span>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-pink">👧</div>
+                        <div class="kpi-label">Féminin</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">103</span>
+                            <span class="kpi-new">52</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-blue">👦</div>
+                        <div class="kpi-label">Masculin</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">80</span>
+                            <span class="kpi-new">50</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-green">✨</div>
+                        <div class="kpi-label">Nouveaux</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">23</span>
+                            <span class="kpi-new">22</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-yellow">🔁</div>
+                        <div class="kpi-label">Redoublants</div>
+                        <div class="kpi-nums"><span class="kpi-new">0</span></div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <div class="section-title-bar"></div>
+                            <h3>Effectif par Niveau</h3>
+                        </div>
+                        <canvas id="colLevelChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <div class="section-title-bar"></div>
+                            <h3>Parité F/M 2026/2027</h3>
+                        </div>
+                        <canvas id="colGenderChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <div class="section-title">
+                        <div class="section-title-bar"></div>
+                        Détail par Niveau - Collège
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Niveau</th>
+                                    <th>Cl. 25/26</th>
+                                    <th>Cl. 26/27</th>
+                                    <th>Total 25/26</th>
+                                    <th>Total 26/27</th>
+                                    <th>F 25/26</th>
+                                    <th>F 26/27</th>
+                                    <th>M 25/26</th>
+                                    <th>M 26/27</th>
+                                    <th>Nouv. 26/27</th>
+                                </tr>
+                            </thead>
+                            <tbody id="colTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PAGE: LYCEE ============ -->
+            <div id="page-lycee" class="page">
+                <div class="cycle-hero lyc">
+                    <div class="cycle-hero-content">
+                        <div class="cycle-emoji">🎓</div>
+                        <h1 class="cycle-title">Lycée</h1>
+                        <p class="cycle-description">1 BAC et 2 BAC - Préparation au Baccalauréat</p>
+                        <div class="year-pills">
+                            <div class="pill pill-prev">2025/2026</div>
+                            <span class="pill-vs">VS</span>
+                            <div class="pill pill-next">2026/2027</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-red">🎯</div>
+                        <div class="kpi-label">Effectif Total</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">60</span>
+                            <span class="kpi-new">28</span>
+                        </div>
+                        <span class="kpi-delta delta-neutral">Inscriptions en cours</span>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-purple">🏫</div>
+                        <div class="kpi-label">Classes</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">7</span>
+                            <span class="kpi-new">7</span>
+                        </div>
+                        <span class="kpi-delta delta-neutral">= stable</span>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-pink">👧</div>
+                        <div class="kpi-label">Féminin</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">32</span>
+                            <span class="kpi-new">15</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-blue">👦</div>
+                        <div class="kpi-label">Masculin</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">28</span>
+                            <span class="kpi-new">13</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-green">✨</div>
+                        <div class="kpi-label">Nouveaux</div>
+                        <div class="kpi-nums">
+                            <span class="kpi-old">5</span>
+                            <span class="kpi-new">0</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-yellow">🔁</div>
+                        <div class="kpi-label">Redoublants</div>
+                        <div class="kpi-nums"><span class="kpi-new">0</span></div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <div class="section-title-bar"></div>
+                            <h3>Effectif par Niveau</h3>
+                        </div>
+                        <canvas id="lycLevelChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <div class="section-title-bar"></div>
+                            <h3>Parité F/M 2026/2027</h3>
+                        </div>
+                        <canvas id="lycGenderChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <div class="section-title">
+                        <div class="section-title-bar"></div>
+                        Détail par Niveau - Lycée
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Niveau</th>
+                                    <th>Cl. 25/26</th>
+                                    <th>Cl. 26/27</th>
+                                    <th>Total 25/26</th>
+                                    <th>Total 26/27</th>
+                                    <th>F 25/26</th>
+                                    <th>F 26/27</th>
+                                    <th>M 25/26</th>
+                                    <th>M 26/27</th>
+                                    <th>Nouv. 26/27</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lycTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // === DATA ===
+        const allData = [
+            { level: 'PS', cls26: 1, tot26: 15, f26: 6, m26: 9, n26: 15, r26: 0, cls27: 1, tot27: 16, f27: 3, m27: 13, n27: 16, r27: 0, cycle: 'mat' },
+            { level: 'MS', cls26: 2, tot26: 30, f26: 14, m26: 16, n26: 14, r26: 0, cls27: 2, tot27: 26, f27: 9, m27: 17, n27: 13, r27: 0, cycle: 'mat' },
+            { level: 'GS', cls26: 3, tot26: 62, f26: 35, m26: 27, n26: 24, r26: 0, cls27: 2, tot27: 23, f27: 11, m27: 12, n27: 8, r27: 0, cycle: 'mat' },
+            { level: 'EC 1', cls26: 2, tot26: 45, f26: 17, m26: 28, n26: 8, r26: 1, cls27: 3, tot27: 40, f27: 23, m27: 17, n27: 5, r27: 0, cycle: 'pri' },
+            { level: 'EC 2', cls26: 2, tot26: 45, f26: 21, m26: 24, n26: 6, r26: 0, cls27: 2, tot27: 28, f27: 11, m27: 17, n27: 0, r27: 1, cycle: 'pri' },
+            { level: 'EC 3', cls26: 3, tot26: 68, f26: 28, m26: 40, n26: 8, r26: 0, cls27: 2, tot27: 22, f27: 10, m27: 12, n27: 0, r27: 0, cycle: 'pri' },
+            { level: 'EC 4', cls26: 2, tot26: 50, f26: 21, m26: 29, n26: 4, r26: 0, cls27: 3, tot27: 35, f27: 17, m27: 18, n27: 0, r27: 0, cycle: 'pri' },
+            { level: 'EC 5', cls26: 2, tot26: 49, f26: 20, m26: 29, n26: 8, r26: 0, cls27: 2, tot27: 29, f27: 10, m27: 19, n27: 0, r27: 0, cycle: 'pri' },
+            { level: 'EC 6', cls26: 2, tot26: 37, f26: 26, m26: 11, n26: 2, r26: 0, cls27: 2, tot27: 25, f27: 12, m27: 13, n27: 0, r27: 0, cycle: 'pri' },
+            { level: '1 JHS ANG', cls26: 2, tot26: 32, f26: 13, m26: 19, n26: 8, r26: 0, cls27: 2, tot27: 9, f27: 6, m27: 3, n27: 0, r27: 0, cycle: 'col' },
+            { level: '1 JHS FR', cls26: 1, tot26: 17, f26: 7, m26: 10, n26: 10, r26: 0, cls27: 1, tot27: 22, f27: 8, m27: 14, n27: 19, r27: 0, cycle: 'col' },
+            { level: '2 JHS ANG', cls26: 2, tot26: 46, f26: 29, m26: 17, n26: 3, r26: 1, cls27: 2, tot27: 22, f27: 10, m27: 12, n27: 0, r27: 0, cycle: 'col' },
+            { level: '2AC FR', cls26: 0, tot26: 0, f26: 0, m26: 0, n26: 0, r26: 0, cls27: 1, tot27: 7, f27: 3, m27: 4, n27: 2, r27: 0, cycle: 'col' },
+            { level: '3 JHS ANG', cls26: 2, tot26: 47, f26: 31, m26: 16, n26: 6, r26: 0, cls27: 2, tot27: 24, f27: 13, m27: 11, n27: 1, r27: 0, cycle: 'col' },
+            { level: 'CCS FR', cls26: 1, tot26: 26, f26: 18, m26: 8, n26: 6, r26: 1, cls27: 1, tot27: 0, f27: 0, m27: 0, n27: 0, r27: 0, cycle: 'col' },
+            { level: 'CCS ANG', cls26: 1, tot26: 15, f26: 5, m26: 10, n26: 0, r26: 0, cls27: 1, tot27: 18, f27: 12, m27: 6, n27: 2, r27: 0, cycle: 'col' },
+            { level: '1 BAC S.EX FR', cls26: 2, tot26: 26, f26: 13, m26: 13, n26: 2, r26: 0, cls27: 2, tot27: 7, f27: 5, m27: 2, n27: 0, r27: 0, cycle: 'lyc' },
+            { level: '1 BAC S.EX ANG', cls26: 1, tot26: 7, f26: 6, m26: 1, n26: 2, r26: 0, cls27: 1, tot27: 8, f27: 2, m27: 6, n27: 0, r27: 0, cycle: 'lyc' },
+            { level: '2 BAC S.PHY FR', cls26: 1, tot26: 12, f26: 6, m26: 6, n26: 0, r26: 0, cls27: 1, tot27: 8, f27: 5, m27: 3, n27: 0, r27: 0, cycle: 'lyc' },
+            { level: '2 BAC S.PHY ANG', cls26: 1, tot26: 5, f26: 3, m26: 2, n26: 0, r26: 0, cls27: 1, tot27: 4, f27: 3, m27: 1, n27: 0, r27: 0, cycle: 'lyc' },
+            { level: '2 BAC S.M.A FR', cls26: 1, tot26: 3, f26: 2, m26: 1, n26: 1, r26: 0, cls27: 1, tot27: 0, f27: 0, m27: 0, n27: 0, r27: 0, cycle: 'lyc' },
+            { level: '1 BAC S.M ANG', cls26: 1, tot26: 7, f26: 2, m26: 5, n26: 0, r26: 0, cls27: 1, tot27: 0, f27: 0, m27: 0, n27: 0, r27: 0, cycle: 'lyc' },
+            { level: '2BACSM-AN', cls26: 0, tot26: 0, f26: 0, m26: 0, n26: 0, r26: 0, cls27: 1, tot27: 1, f27: 0, m27: 1, n27: 0, r27: 0, cycle: 'lyc' }
+        ].filter(d => d.tot26 > 0 || d.tot27 > 0);
+
+        const matData = allData.filter(d => d.cycle === 'mat');
+        const priData = allData.filter(d => d.cycle === 'pri');
+        const colData = allData.filter(d => d.cycle === 'col');
+        const lycData = allData.filter(d => d.cycle === 'lyc');
+
+        // === CHART DEFAULTS ===
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+        Chart.defaults.font.family = 'Poppins';
+
+        const cPrev = 'rgba(102, 126, 234, 0.85)';
+        const cNext = 'rgba(240, 147, 251, 0.85)';
+        const bPrev = 'rgba(102, 126, 234, 1)';
+        const bNext = 'rgba(240, 147, 251, 1)';
+
+        // === NAVIGATION ===
+        let chartsInitialized = { home: false, mat: false, pri: false, col: false, lyc: false };
+
+        function showPage(page, navEl) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('page-' + page).classList.add('active');
+            if (navEl) navEl.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Close mobile sidebar
+            document.getElementById('sidebar').classList.remove('open');
+
+            // Init charts for page
+            setTimeout(() => {
+                if (page === 'home' && !chartsInitialized.home) initHomeCharts();
+                if (page === 'maternelle' && !chartsInitialized.mat) initMatCharts();
+                if (page === 'primaire' && !chartsInitialized.pri) initPriCharts();
+                if (page === 'college' && !chartsInitialized.col) initColCharts();
+                if (page === 'lycee' && !chartsInitialized.lyc) initLycCharts();
+            }, 100);
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // === HOME CHARTS ===
+        function initHomeCharts() {
+            chartsInitialized.home = true;
+
+            // Same date comparison
+            new Chart(document.getElementById('homeSameDate'), {
+                type: 'bar',
+                data: {
+                    labels: ['Inscriptions au 19 mai'],
+                    datasets: [
+                        { label: '19/05/2025 (année 25/26)', data: [349], backgroundColor: cPrev, borderColor: bPrev, borderWidth: 2, borderRadius: 10 },
+                        { label: '19/05/2026 (année 26/27)', data: [374], backgroundColor: 'rgba(16, 185, 129, 0.85)', borderColor: 'rgba(16, 185, 129, 1)', borderWidth: 2, borderRadius: 10 }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y', responsive: true,
+                    plugins: { legend: { position: 'top', labels: { usePointStyle: true } } },
+                    scales: { x: { beginAtZero: true, max: 450 }, y: { grid: { display: false } } }
+                }
+            });
+
+            // New vs Old
+            new Chart(document.getElementById('homeNewOld'), {
+                type: 'bar',
+                data: {
+                    labels: ['Au 19/05/2025', 'Au 19/05/2026'],
+                    datasets: [
+                        { label: 'Nouveaux', data: [25, 59], backgroundColor: 'rgba(16, 185, 129, 0.85)', borderRadius: 8 },
+                        { label: 'Anciens', data: [324, 315], backgroundColor: cPrev, borderRadius: 8 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true } },
+                        title: { display: true, text: 'Total: 349 → 374 élèves (+7.2%)', color: '#34d399', font: { size: 13, weight: '700' } }
+                    },
+                    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
+                }
+            });
+
+            // Cycles comparison
+            new Chart(document.getElementById('homeCycles'), {
+                type: 'bar',
+                data: {
+                    labels: ['Maternelle', 'Primaire', 'Collège', 'Lycée'],
+                    datasets: [
+                        { label: 'Total final 2025/2026', data: [107, 294, 183, 60], backgroundColor: cPrev, borderColor: bPrev, borderWidth: 2, borderRadius: 10 },
+                        { label: 'Actuel 2026/2027', data: [65, 179, 102, 28], backgroundColor: cNext, borderColor: bNext, borderWidth: 2, borderRadius: 10 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'top', labels: { usePointStyle: true } } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Gender Prev
+            new Chart(document.getElementById('homeGenderPrev'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Féminin (317)', 'Masculin (327)'],
+                    datasets: [{
+                        data: [317, 327],
+                        backgroundColor: ['rgba(244, 114, 182, 0.85)', 'rgba(96, 165, 250, 0.85)'],
+                        borderWidth: 3
+                    }]
+                },
+                options: { responsive: true, cutout: '65%', plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // Gender Next
+            new Chart(document.getElementById('homeGenderNext'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Féminin (173)', 'Masculin (201)'],
+                    datasets: [{
+                        data: [173, 201],
+                        backgroundColor: ['rgba(244, 114, 182, 0.85)', 'rgba(96, 165, 250, 0.85)'],
+                        borderWidth: 3
+                    }]
+                },
+                options: { responsive: true, cutout: '65%', plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        // === MAT CHARTS ===
+        function initMatCharts() {
+            chartsInitialized.mat = true;
+            buildCycleTable('matTable', matData);
+
+            new Chart(document.getElementById('matLevelChart'), {
+                type: 'bar',
+                data: {
+                    labels: matData.map(d => d.level),
+                    datasets: [
+                        { label: '2025/2026', data: matData.map(d => d.tot26), backgroundColor: cPrev, borderColor: bPrev, borderWidth: 2, borderRadius: 8 },
+                        { label: '2026/2027', data: matData.map(d => d.tot27), backgroundColor: cNext, borderColor: bNext, borderWidth: 2, borderRadius: 8 }
+                    ]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'top', labels: { usePointStyle: true } } }, scales: { y: { beginAtZero: true } } }
+            });
+
+            new Chart(document.getElementById('matGenderChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Féminin (23)', 'Masculin (42)'],
+                    datasets: [{ data: [23, 42], backgroundColor: ['rgba(244, 114, 182, 0.85)', 'rgba(96, 165, 250, 0.85)'], borderWidth: 3 }]
+                },
+                options: { responsive: true, cutout: '65%', plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        // === PRI CHARTS ===
+        function initPriCharts() {
+            chartsInitialized.pri = true;
+            buildCycleTable('priTable', priData);
+
+            new Chart(document.getElementById('priLevelChart'), {
+                type: 'bar',
+                data: {
+                    labels: priData.map(d => d.level),
+                    datasets: [
+                        { label: '2025/2026', data: priData.map(d => d.tot26), backgroundColor: cPrev, borderColor: bPrev, borderWidth: 2, borderRadius: 8 },
+                        { label: '2026/2027', data: priData.map(d => d.tot27), backgroundColor: cNext, borderColor: bNext, borderWidth: 2, borderRadius: 8 }
+                    ]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'top', labels: { usePointStyle: true } } }, scales: { y: { beginAtZero: true } } }
+            });
+
+            new Chart(document.getElementById('priGenderChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Féminin (83)', 'Masculin (96)'],
+                    datasets: [{ data: [83, 96], backgroundColor: ['rgba(244, 114, 182, 0.85)', 'rgba(96, 165, 250, 0.85)'], borderWidth: 3 }]
+                },
+                options: { responsive: true, cutout: '65%', plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        // === COL CHARTS ===
+        function initColCharts() {
+            chartsInitialized.col = true;
+            buildCycleTable('colTable', colData);
+
+            new Chart(document.getElementById('colLevelChart'), {
+                type: 'bar',
+                data: {
+                    labels: colData.map(d => d.level),
+                    datasets: [
+                        { label: '2025/2026', data: colData.map(d => d.tot26), backgroundColor: cPrev, borderColor: bPrev, borderWidth: 2, borderRadius: 8 },
+                        { label: '2026/2027', data: colData.map(d => d.tot27), backgroundColor: cNext, borderColor: bNext, borderWidth: 2, borderRadius: 8 }
+                    ]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'top', labels: { usePointStyle: true } } }, scales: { y: { beginAtZero: true } } }
+            });
+
+            new Chart(document.getElementById('colGenderChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Féminin (52)', 'Masculin (50)'],
+                    datasets: [{ data: [52, 50], backgroundColor: ['rgba(244, 114, 182, 0.85)', 'rgba(96, 165, 250, 0.85)'], borderWidth: 3 }]
+                },
+                options: { responsive: true, cutout: '65%', plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        // === LYC CHARTS ===
+        function initLycCharts() {
+            chartsInitialized.lyc = true;
+            buildCycleTable('lycTable', lycData);
+
+            new Chart(document.getElementById('lycLevelChart'), {
+                type: 'bar',
+                data: {
+                    labels: lycData.map(d => d.level),
+                    datasets: [
+                        { label: '2025/2026', data: lycData.map(d => d.tot26), backgroundColor: cPrev, borderColor: bPrev, borderWidth: 2, borderRadius: 8 },
+                        { label: '2026/2027', data: lycData.map(d => d.tot27), backgroundColor: cNext, borderColor: bNext, borderWidth: 2, borderRadius: 8 }
+                    ]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'top', labels: { usePointStyle: true } } }, scales: { y: { beginAtZero: true } } }
+            });
+
+            new Chart(document.getElementById('lycGenderChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Féminin (15)', 'Masculin (13)'],
+                    datasets: [{ data: [15, 13], backgroundColor: ['rgba(244, 114, 182, 0.85)', 'rgba(96, 165, 250, 0.85)'], borderWidth: 3 }]
+                },
+                options: { responsive: true, cutout: '65%', plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        // === BUILD TABLE ===
+        function buildCycleTable(tableId, data) {
+            let html = '';
+            let totCls26=0, totCls27=0, totT26=0, totT27=0, totF26=0, totF27=0, totM26=0, totM27=0, totN27=0;
+
+            data.forEach(d => {
+                totCls26 += d.cls26; totCls27 += d.cls27;
+                totT26 += d.tot26; totT27 += d.tot27;
+                totF26 += d.f26; totF27 += d.f27;
+                totM26 += d.m26; totM27 += d.m27;
+                totN27 += d.n27;
+
+                html += `<tr>
+                    <td class="level-cell">${d.level}</td>
+                    <td>${d.cls26}</td>
+                    <td>${d.cls27}</td>
+                    <td>${d.tot26}</td>
+                    <td>${d.tot27}</td>
+                    <td>${d.f26}</td>
+                    <td>${d.f27}</td>
+                    <td>${d.m26}</td>
+                    <td>${d.m27}</td>
+                    <td>${d.n27 > 0 ? `<span class="new-badge">${d.n27}</span>` : '-'}</td>
+                </tr>`;
+            });
+
+            html += `<tr class="total-row">
+                <td>TOTAL</td>
+                <td>${totCls26}</td>
+                <td>${totCls27}</td>
+                <td>${totT26}</td>
+                <td>${totT27}</td>
+                <td>${totF26}</td>
+                <td>${totF27}</td>
+                <td>${totM26}</td>
+                <td>${totM27}</td>
+                <td><span class="new-badge">${totN27}</span></td>
+            </tr>`;
+
+            document.getElementById(tableId).innerHTML = html;
+        }
+
+        // Init home charts on load
+        initHomeCharts();
+    </script>
+</body>
+</html>
+
