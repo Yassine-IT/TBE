@@ -1960,46 +1960,49 @@
                 <p>Dashboard Effectifs</p>
             </div>
 
+            <!-- Role Badge -->
+            <div id="roleBadge"></div>
+
             <div class="nav-section">Vue d'ensemble</div>
-            <div class="nav-item active" onclick="showPage('home', this)">
+            <div class="nav-item active" data-page="home" onclick="showPage('home', this)">
                 <div class="nav-icon">🏠</div>
                 <span>Accueil</span>
             </div>
 
             <div class="nav-section">Par Cycle</div>
-            <div class="nav-item" onclick="showPage('maternelle', this)">
+            <div class="nav-item" data-cycle="mat" data-page="maternelle" onclick="showPage('maternelle', this)">
                 <div class="nav-icon">🎨</div>
                 <span>Maternelle</span>
                 <span class="nav-badge">PS-GS</span>
             </div>
-            <div class="nav-item" onclick="showPage('primaire', this)">
+            <div class="nav-item" data-cycle="pri" data-page="primaire" onclick="showPage('primaire', this)">
                 <div class="nav-icon">📚</div>
                 <span>Primaire</span>
                 <span class="nav-badge">EC1-6</span>
             </div>
-            <div class="nav-item" onclick="showPage('college', this)">
+            <div class="nav-item" data-cycle="col" data-page="college" onclick="showPage('college', this)">
                 <div class="nav-icon">🏫</div>
                 <span>Collège</span>
                 <span class="nav-badge">JHS</span>
             </div>
-            <div class="nav-item" onclick="showPage('lycee', this)">
+            <div class="nav-item" data-cycle="lyc" data-page="lycee" onclick="showPage('lycee', this)">
                 <div class="nav-icon">🎓</div>
                 <span>Lycée</span>
                 <span class="nav-badge">BAC</span>
             </div>
 
             <div class="nav-section">Suivi</div>
-            <div class="nav-item" onclick="showPage('suivi', this)">
+            <div class="nav-item" data-page="suivi" onclick="showPage('suivi', this)">
                 <div class="nav-icon">📊</div>
                 <span>Inscriptions</span>
                 <span class="nav-badge" style="background:rgba(239,68,68,.2);color:#f87171">335</span>
             </div>
-            <div class="nav-item" onclick="showPage('manque', this)">
+            <div class="nav-item" data-page="manque" onclick="showPage('manque', this)">
                 <div class="nav-icon">📉</div>
                 <span>Manque</span>
                 <span class="nav-badge" style="background:rgba(239,68,68,.2);color:#f87171">−270</span>
             </div>
-            <div class="nav-item" onclick="showPage('orientations', this)">
+            <div class="nav-item" data-page="orientations" onclick="showPage('orientations', this)">
                 <div class="nav-icon">🗺️</div>
                 <span>Orientations</span>
                 <span class="nav-badge" style="background:rgba(139,92,246,.2);color:#c4b5fd">Lycée</span>
@@ -2008,6 +2011,9 @@
             <div class="sidebar-footer">
                 📅 Date: <strong>19/05/2026</strong><br>
                 Responsable Service IT SABAR YASSINE
+                <button onclick="doLogout()" style="margin-top:10px;width:100%;padding:8px 12px;background:rgba(239,68,68,.12);color:#fca5a5;border:1px solid rgba(239,68,68,.3);border-radius:8px;font-family:inherit;font-size:.85em;cursor:pointer;font-weight:600;transition:all .3s" onmouseover="this.style.background='rgba(239,68,68,.2)'" onmouseout="this.style.background='rgba(239,68,68,.12)'">
+                    🚪 Déconnexion
+                </button>
             </div>
         </aside>
 
@@ -2161,7 +2167,7 @@
                 </div>
 
                 <!-- Chart KAN vs DB -->
-                <div class="charts-grid">
+                <div class="charts-grid" data-restrict="sup">
                     <div class="chart-card full">
                         <div class="chart-title"><div class="section-title-bar"></div><h3>KAN vs DB — Élèves & Classes par cycle</h3></div>
                         <canvas id="homeCyclesKanDb"></canvas>
@@ -3552,7 +3558,7 @@
         function initSuiviCharts() {
             chartsInitialized.suivi = true;
 
-            const suiviData = [
+            const _allSuiviData = [
                 {cycle:'Maternelle',level:'PS',      ins:16,rei:0,  dep:2,  pend:2},
                 {cycle:'Maternelle',level:'MS',      ins:10,rei:16, dep:2,  pend:15},
                 {cycle:'Maternelle',level:'GS',      ins:8, rei:15, dep:2,  pend:27},
@@ -3578,7 +3584,41 @@
                 {cycle:'Lycée',     level:'2BAC SM-AN',      ins:0,rei:1,dep:0,pend:0}
             ];
 
-            const cycleOrder = ['Maternelle','Primaire','Collège','Lycée'];
+            // Filter based on role
+            const isSup = CURRENT_USER && CURRENT_USER.role === 'sup';
+            const suiviData = isSup 
+                ? _allSuiviData.filter(d => d.cycle === 'Collège' || d.cycle === 'Lycée')
+                : _allSuiviData;
+            const cycleOrder = isSup ? ['Collège','Lycée'] : ['Maternelle','Primaire','Collège','Lycée'];
+
+            // Update KPI cards for SUP based on filtered data
+            if (isSup) {
+                const totalIns = suiviData.reduce((s,d) => s + d.ins, 0);
+                const totalRei = suiviData.reduce((s,d) => s + d.rei, 0);
+                const totalConf = totalIns + totalRei;
+                const totalPend = suiviData.reduce((s,d) => s + d.pend, 0);
+                const totalDep = suiviData.reduce((s,d) => s + d.dep, 0);
+                const potentielMax = totalConf + totalPend;
+                const tauxConf = totalConf + totalPend > 0 ? Math.round(totalConf / (totalConf + totalPend) * 100) : 0;
+
+                const kpiCards = document.querySelectorAll('#page-suivi .kpi-grid .kpi-card');
+                if (kpiCards.length >= 6) {
+                    kpiCards[0].querySelector('.kpi-new').textContent = totalConf;
+                    kpiCards[0].querySelector('.kpi-delta').textContent = `${totalIns} nouveaux · ${totalRei} réinscrits`;
+                    kpiCards[1].querySelector('.kpi-new').textContent = totalPend;
+                    kpiCards[2].querySelector('.kpi-new').textContent = totalDep;
+                    kpiCards[3].querySelector('.kpi-new').textContent = potentielMax;
+                    kpiCards[3].querySelector('.kpi-delta').textContent = `Si tous les ${totalPend} reviennent`;
+                    kpiCards[4].querySelector('.kpi-new').textContent = totalIns;
+                    kpiCards[5].querySelector('.kpi-new').textContent = tauxConf + '%';
+                    kpiCards[5].querySelector('.kpi-delta').textContent = `${totalConf} / (${totalConf} + ${totalPend})`;
+                }
+
+                // Update page subtitle
+                const sub = document.querySelector('#page-suivi .page-subtitle');
+                if (sub) sub.innerHTML = '🎓 Collège + Lycée uniquement — Confirmés · Non encore réinscrits · Départs au 19/05/2026';
+            }
+
             const cycleSums = {};
             cycleOrder.forEach(c => {
                 const rows = suiviData.filter(d => d.cycle === c);
@@ -3640,14 +3680,22 @@
                     <td style="font-weight:700;${pctStyle}">${total > 0 ? pct + '%' : '—'}</td>
                 </tr>`);
             });
+            // Compute dynamic totals from filtered data
+            const _totIns = suiviData.reduce((s,d) => s + d.ins, 0);
+            const _totRei = suiviData.reduce((s,d) => s + d.rei, 0);
+            const _totConf = _totIns + _totRei;
+            const _totPend = suiviData.reduce((s,d) => s + d.pend, 0);
+            const _totDep = suiviData.reduce((s,d) => s + d.dep, 0);
+            const _totPct = (_totConf + _totPend) > 0 ? Math.round(_totConf / (_totConf + _totPend) * 100) : 0;
+
             tbody.insertAdjacentHTML('beforeend', `<tr class="total-row">
                 <td colspan="2">TOTAL</td>
-                <td><span class="new-badge">60</span></td>
-                <td style="color:#a5b4fc">317</td>
-                <td style="font-weight:800">377</td>
-                <td style="color:#fbbf24;font-weight:700">335</td>
-                <td style="color:#f87171;font-weight:700">29</td>
-                <td style="color:#fbbf24;font-weight:700">53%</td>
+                <td><span class="new-badge">${_totIns}</span></td>
+                <td style="color:#a5b4fc">${_totRei}</td>
+                <td style="font-weight:800">${_totConf}</td>
+                <td style="color:#fbbf24;font-weight:700">${_totPend}</td>
+                <td style="color:#f87171;font-weight:700">${_totDep}</td>
+                <td style="color:#fbbf24;font-weight:700">${_totPct}%</td>
             </tr>`);
         }
 
@@ -3655,7 +3703,7 @@
         function initManqueCharts() {
             chartsInitialized.manque = true;
 
-            const mData = [
+            const _allMData = [
                 {cycle:'Maternelle', level:'PS',              v26:15, v27:16},
                 {cycle:'Maternelle', level:'MS',              v26:30, v27:26},
                 {cycle:'Maternelle', level:'GS',              v26:62, v27:23},
@@ -3681,7 +3729,33 @@
                 {cycle:'Lycée',      level:'2BAC SM-AN',       v26:0,  v27:1}
             ];
 
-            const cycleOrder = ['Maternelle','Primaire','Collège','Lycée'];
+            // Filter based on role
+            const isSup = CURRENT_USER && CURRENT_USER.role === 'sup';
+            const mData = isSup 
+                ? _allMData.filter(d => d.cycle === 'Collège' || d.cycle === 'Lycée')
+                : _allMData;
+            const cycleOrder = isSup ? ['Collège','Lycée'] : ['Maternelle','Primaire','Collège','Lycée'];
+
+            // Update KPIs on Manque page for SUP
+            if (isSup) {
+                const sumV26 = mData.reduce((s,d) => s + d.v26, 0);
+                const sumV27 = mData.reduce((s,d) => s + d.v27, 0);
+                const diff = sumV27 - sumV26;
+                const pct = sumV26 > 0 ? Math.round(sumV27 / sumV26 * 100) : 0;
+                
+                const kpiCards = document.querySelectorAll('#page-manque .kpi-grid .kpi-card');
+                if (kpiCards.length >= 4) {
+                    if (kpiCards[0].querySelector('.kpi-new')) kpiCards[0].querySelector('.kpi-new').textContent = sumV26;
+                    if (kpiCards[1].querySelector('.kpi-new')) kpiCards[1].querySelector('.kpi-new').textContent = sumV27;
+                    if (kpiCards[2].querySelector('.kpi-new')) kpiCards[2].querySelector('.kpi-new').textContent = (diff >= 0 ? '+' : '') + diff;
+                    if (kpiCards[3].querySelector('.kpi-new')) kpiCards[3].querySelector('.kpi-new').textContent = pct + '%';
+                }
+                
+                // Update page subtitle
+                const sub = document.querySelector('#page-manque .page-subtitle');
+                if (sub) sub.innerHTML = '🎓 Collège + Lycée uniquement — Comparaison 2025/2026 (final) vs 2026/2027 (actuel)';
+            }
+
             const cycleSums = {};
             cycleOrder.forEach(c => {
                 const rows = mData.filter(d => d.cycle === c);
@@ -3772,15 +3846,24 @@
                 </tr>`);
             });
 
+            // Compute dynamic totals from filtered data
+            const _mTotV26 = mData.reduce((s,d) => s + d.v26, 0);
+            const _mTotV27 = mData.reduce((s,d) => s + d.v27, 0);
+            const _mTotDiff = _mTotV27 - _mTotV26;
+            const _mTotPct = _mTotV26 > 0 ? Math.round(_mTotV27 / _mTotV26 * 100) : 0;
+            const _mTotBarPct = Math.min(_mTotPct, 100);
+            const _mTotColor = _mTotDiff >= 0 ? '#10b981' : (_mTotPct >= 70 ? '#fbbf24' : '#ef4444');
+            const _mTotSign = _mTotDiff > 0 ? '+' : '';
+
             tbody.insertAdjacentHTML('beforeend', `<tr class="total-row">
                 <td colspan="2">TOTAL</td>
-                <td style="text-align:center;color:#a5b4fc">644</td>
-                <td style="text-align:center;color:#f0abfc">377</td>
-                <td style="text-align:center;color:#f87171;font-weight:800">−267</td>
-                <td style="text-align:center;color:#fbbf24;font-weight:700">58%</td>
+                <td style="text-align:center;color:#a5b4fc">${_mTotV26}</td>
+                <td style="text-align:center;color:#f0abfc">${_mTotV27}</td>
+                <td style="text-align:center;color:${_mTotDiff < 0 ? '#f87171' : '#34d399'};font-weight:800">${_mTotSign}${_mTotDiff}</td>
+                <td style="text-align:center;color:${_mTotColor};font-weight:700">${_mTotPct}%</td>
                 <td style="padding-right:20px">
                     <div style="background:rgba(255,255,255,.05);border-radius:6px;height:8px;overflow:hidden">
-                        <div style="width:58%;height:100%;background:#fbbf24;border-radius:6px"></div>
+                        <div style="width:${_mTotBarPct}%;height:100%;background:${_mTotColor};border-radius:6px"></div>
                     </div>
                 </td>
             </tr>`);
@@ -3793,11 +3876,27 @@
 
 <script>
     // ====== LOGIN ======
+    // ====== USER ACCOUNTS & ROLES ======
+    const ACCOUNTS = {
+        'IT':  { password: '1234', role: 'admin',  name: 'Admin IT',     access: 'Tous les cycles' },
+        'SUP': { password: '2026', role: 'sup',    name: 'Sup. Cycles',  access: 'Collège + Lycée uniquement' }
+    };
+
+    let CURRENT_USER = null;
+
     function doLogin() {
-        const u = document.getElementById('loginUser').value.trim();
+        const u = document.getElementById('loginUser').value.trim().toUpperCase();
         const p = document.getElementById('loginPass').value;
         const err = document.getElementById('loginError');
-        if (u === 'IT' && p === '1234') {
+        
+        const account = ACCOUNTS[u];
+        
+        if (account && account.password === p) {
+            CURRENT_USER = { username: u, ...account };
+            
+            // Apply role-based restrictions
+            applyRoleRestrictions();
+            
             document.getElementById('loginPage').style.opacity = '0';
             document.getElementById('loginPage').style.transition = 'opacity 0.5s';
             setTimeout(() => {
@@ -3813,6 +3912,157 @@
                 document.getElementById('loginPass').style.borderColor = '';
             }, 3000);
         }
+    }
+
+    // ====== ROLE-BASED ACCESS CONTROL ======
+    function applyRoleRestrictions() {
+        if (!CURRENT_USER) return;
+        
+        const isAdmin = CURRENT_USER.role === 'admin';
+        const isSup = CURRENT_USER.role === 'sup';
+        
+        // Update role badge in sidebar
+        const roleBadge = document.getElementById('roleBadge');
+        if (roleBadge) {
+            const icon = isAdmin ? '👑' : '🎓';
+            const color = isAdmin ? 'linear-gradient(135deg,#fbbf24,#f59e0b)' : 'linear-gradient(135deg,#6366f1,#8b5cf6)';
+            roleBadge.innerHTML = `
+                <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;margin-bottom:14px">
+                    <div style="width:32px;height:32px;border-radius:8px;background:${color};display:flex;align-items:center;justify-content:center;font-size:1.1em">${icon}</div>
+                    <div style="flex:1;min-width:0">
+                        <div style="font-size:.78em;font-weight:700;color:#fff;letter-spacing:-.01em">${CURRENT_USER.name}</div>
+                        <div style="font-size:.65em;color:#94a3b8;margin-top:2px">${CURRENT_USER.access}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Show/hide nav items based on data-cycle (Maternelle, Primaire)
+        document.querySelectorAll('[data-cycle]').forEach(el => {
+            const cycle = el.getAttribute('data-cycle');
+            if (isSup && (cycle === 'mat' || cycle === 'pri')) {
+                el.style.display = 'none';
+            } else {
+                el.style.display = '';
+            }
+        });
+        
+        // Show/hide all elements with data-restrict="sup" (Inscriptions, Manque, Orientations, charts...)
+        document.querySelectorAll('[data-restrict="sup"]').forEach(el => {
+            el.style.display = isSup ? 'none' : '';
+        });
+        
+        // Hide maternelle and primaire cycle cards on home page
+        const matCard = document.querySelector('.cycle-mini.mat');
+        const priCard = document.querySelector('.cycle-mini.pri');
+        if (matCard) matCard.style.display = isSup ? 'none' : '';
+        if (priCard) priCard.style.display = isSup ? 'none' : '';
+        
+        // Update grid columns when in SUP mode (2 cards instead of 4)
+        const cycleGrid = matCard?.parentElement;
+        if (cycleGrid) {
+            if (isSup) {
+                cycleGrid.style.gridTemplateColumns = 'repeat(auto-fit,minmax(280px,1fr))';
+            } else {
+                cycleGrid.style.gridTemplateColumns = 'repeat(auto-fit,minmax(260px,1fr))';
+            }
+        }
+        
+        // Update the 3 big KPIs based on role
+        updateBigKPIs(isSup);
+        
+        // Update nav badges based on role
+        if (isSup) {
+            // Inscriptions badge: 148 (only Collège + Lycée pending)
+            const inscBadge = document.querySelector('.nav-item[data-page="suivi"] .nav-badge');
+            if (inscBadge) inscBadge.textContent = '148';
+            
+            // Manque badge: -110 (only Collège + Lycée)
+            const manqueBadge = document.querySelector('.nav-item[data-page="manque"] .nav-badge');
+            if (manqueBadge) manqueBadge.textContent = '−110';
+        } else {
+            const inscBadge = document.querySelector('.nav-item[data-page="suivi"] .nav-badge');
+            if (inscBadge) inscBadge.textContent = '335';
+            
+            const manqueBadge = document.querySelector('.nav-item[data-page="manque"] .nav-badge');
+            if (manqueBadge) manqueBadge.textContent = '−270';
+        }
+        
+        // Update the page subtitle
+        const pageSubtitle = document.querySelector('#page-home .page-subtitle');
+        if (pageSubtitle) {
+            if (isSup) {
+                pageSubtitle.innerHTML = '🎓 Collège + Lycée uniquement — 2025/2026 (final) vs 2026/2027 (en cours)';
+            } else {
+                pageSubtitle.innerHTML = 'Effectifs &amp; Classes — 2025/2026 (final) vs 2026/2027 (en cours)';
+            }
+        }
+        
+        // Update page title for SUP
+        const pageTitle = document.querySelector('#page-home .page-title');
+        if (pageTitle) {
+            if (isSup) {
+                pageTitle.innerHTML = 'THE ANGLO SCHOOL';
+            } else {
+                pageTitle.innerHTML = 'THE ANGLO SCHOOL';
+            }
+        }
+    }
+    
+    function updateBigKPIs(isSup) {
+        // Total numbers from the data
+        // Admin (all cycles): KAN=644, DB=377, Manque=-267
+        // SUP (College+Lycée only): KAN=243, DB=133, Manque=-110
+        const data = isSup 
+            ? { kan: 243, kanClasses: 16, db: 133, dbClasses: 19, manque: -110, restants: 110 }
+            : { kan: 644, kanClasses: 36, db: 377, dbClasses: 38, manque: -267, restants: 335 };
+        
+        const kpiCards = document.querySelectorAll('#page-home > div:nth-of-type(1) .kpi-card');
+        if (kpiCards.length >= 3) {
+            // KAN card
+            const kanCard = kpiCards[0];
+            const kanValue = kanCard.querySelector('[style*="font-size:3.5em"]');
+            const kanClasses = kanCard.querySelector('[style*="font-size:1.8em"]');
+            if (kanValue) kanValue.textContent = data.kan;
+            if (kanClasses) kanClasses.textContent = data.kanClasses;
+            
+            // DB card
+            const dbCard = kpiCards[1];
+            const dbValue = dbCard.querySelector('[style*="font-size:3.5em"]');
+            const dbClasses = dbCard.querySelector('[style*="font-size:1.8em"]');
+            if (dbValue) dbValue.textContent = data.db;
+            if (dbClasses) dbClasses.textContent = data.dbClasses;
+            
+            // MANQUE card
+            const manqueCard = kpiCards[2];
+            const manqueValue = manqueCard.querySelector('[style*="font-size:3.5em"]');
+            const manqueRestants = manqueCard.querySelector('[style*="font-size:1.8em"]');
+            if (manqueValue) manqueValue.textContent = data.manque;
+            if (manqueRestants) manqueRestants.textContent = data.restants;
+        }
+    }
+    
+    // Override showPage to block restricted pages (only Maternelle & Primaire are blocked for SUP)
+    const _originalShowPage = window.showPage;
+    window.showPage = function(page, navEl) {
+        if (CURRENT_USER && CURRENT_USER.role === 'sup') {
+            const restrictedPages = ['maternelle', 'primaire'];
+            if (restrictedPages.includes(page)) {
+                alert('🔒 Accès limité\n\nCe compte (Sup. Cycles) ne peut consulter que :\n• Accueil\n• Collège\n• Lycée\n• Inscriptions (Collège + Lycée)\n• Manque (Collège + Lycée)\n• Orientations');
+                page = 'home';
+                navEl = document.querySelector('.nav-item[data-page="home"]') || document.querySelectorAll('.nav-item')[0];
+            }
+        }
+        if (typeof _originalShowPage === 'function') _originalShowPage(page, navEl);
+    };
+
+    function doLogout() {
+        CURRENT_USER = null;
+        document.getElementById('appWrapper').style.display = 'none';
+        document.getElementById('loginPage').style.display = 'flex';
+        document.getElementById('loginPage').style.opacity = '1';
+        document.getElementById('loginUser').value = '';
+        document.getElementById('loginPass').value = '';
     }
 
     // ====== SIDEBAR MOBILE ======
